@@ -1,0 +1,308 @@
+{
+  "sourceGif": "baguette_bonk_doge.gif",
+  "frameCount": 25,
+  "gifWidth": 64,
+  "gifHeight": 64,
+  "frames": [
+    {
+      "index": 0,
+      "path": "frames/frame-000.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 23,
+        "width": 42,
+        "height": 41
+      }
+    },
+    {
+      "index": 1,
+      "path": "frames/frame-001.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 29,
+        "width": 42,
+        "height": 35
+      }
+    },
+    {
+      "index": 2,
+      "path": "frames/frame-002.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 38,
+        "width": 42,
+        "height": 26
+      }
+    },
+    {
+      "index": 3,
+      "path": "frames/frame-003.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 38,
+        "width": 42,
+        "height": 26
+      }
+    },
+    {
+      "index": 4,
+      "path": "frames/frame-004.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 24,
+        "width": 42,
+        "height": 40
+      }
+    },
+    {
+      "index": 5,
+      "path": "frames/frame-005.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 54,
+        "width": 42,
+        "height": 10
+      }
+    },
+    {
+      "index": 6,
+      "path": "frames/frame-006.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 53,
+        "width": 42,
+        "height": 11
+      }
+    },
+    {
+      "index": 7,
+      "path": "frames/frame-007.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 37,
+        "width": 42,
+        "height": 27
+      }
+    },
+    {
+      "index": 8,
+      "path": "frames/frame-008.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 19,
+        "width": 42,
+        "height": 45
+      }
+    },
+    {
+      "index": 9,
+      "path": "frames/frame-009.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 24,
+        "width": 42,
+        "height": 40
+      }
+    },
+    {
+      "index": 10,
+      "path": "frames/frame-010.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 33,
+        "width": 42,
+        "height": 31
+      }
+    },
+    {
+      "index": 11,
+      "path": "frames/frame-011.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 35,
+        "width": 42,
+        "height": 29
+      }
+    },
+    {
+      "index": 12,
+      "path": "frames/frame-012.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 23,
+        "width": 42,
+        "height": 41
+      }
+    },
+    {
+      "index": 13,
+      "path": "frames/frame-013.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 23,
+        "width": 42,
+        "height": 41
+      }
+    },
+    {
+      "index": 14,
+      "path": "frames/frame-014.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 36,
+        "width": 42,
+        "height": 28
+      }
+    },
+    {
+      "index": 15,
+      "path": "frames/frame-015.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 36,
+        "width": 42,
+        "height": 28
+      }
+    },
+    {
+      "index": 16,
+      "path": "frames/frame-016.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 25,
+        "width": 42,
+        "height": 39
+      }
+    },
+    {
+      "index": 17,
+      "path": "frames/frame-017.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 23,
+        "width": 42,
+        "height": 41
+      }
+    },
+    {
+      "index": 18,
+      "path": "frames/frame-018.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 36,
+        "width": 42,
+        "height": 28
+      }
+    },
+    {
+      "index": 19,
+      "path": "frames/frame-019.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 36,
+        "width": 42,
+        "height": 28
+      }
+    },
+    {
+      "index": 20,
+      "path": "frames/frame-020.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 24,
+        "width": 42,
+        "height": 40
+      }
+    },
+    {
+      "index": 21,
+      "path": "frames/frame-021.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 23,
+        "width": 42,
+        "height": 41
+      }
+    },
+    {
+      "index": 22,
+      "path": "frames/frame-022.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 38,
+        "width": 42,
+        "height": 26
+      }
+    },
+    {
+      "index": 23,
+      "path": "frames/frame-023.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 38,
+        "width": 42,
+        "height": 26
+      }
+    },
+    {
+      "index": 24,
+      "path": "frames/frame-024.png",
+      "delay": 50,
+      "disposal": 2,
+      "dogPosition": {
+        "x": 22,
+        "y": 23,
+        "width": 42,
+        "height": 41
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+    "attribution": {
+        "commit": "",
+        "pr": ""
+    },
+    "permissions": {
+        "allow": [
+            "WebFetch(domain:www.anthropic.com)",
+            "Bash(git config user.name)",
+            "Bash(rg:*)",
+            "Bash(find:*)"
+        ],
+        "deny": [
+            "WebFetch(domain:github.com)",
+            "WebFetch(domain:asana.com)"
+        ]
+    }
+}

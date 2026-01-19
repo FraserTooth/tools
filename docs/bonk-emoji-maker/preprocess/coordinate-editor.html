@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bonk Emoji Maker - Coordinate Editor</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #eee;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #ff6b6b;
+        }
+        .instructions {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .instructions ul {
+            margin: 10px 0;
+        }
+        .controls {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .frame-nav {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .frame-nav button {
+            padding: 8px 15px;
+            background: #533483;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .frame-nav button:hover {
+            background: #6b4499;
+        }
+        .frame-nav button:disabled {
+            background: #333;
+            cursor: not-allowed;
+        }
+        #frameInfo {
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+        .canvas-container {
+            position: relative;
+            display: inline-block;
+            background: #000;
+            border: 3px solid #533483;
+            border-radius: 8px;
+            cursor: crosshair;
+        }
+        #frameCanvas {
+            display: block;
+            image-rendering: pixelated;
+        }
+        .selection-box {
+            position: absolute;
+            border: 2px solid #ff6b6b;
+            background: rgba(255, 107, 107, 0.2);
+            pointer-events: none;
+        }
+        .resize-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ff6b6b;
+            border: 2px solid white;
+            border-radius: 50%;
+            pointer-events: all;
+            cursor: nwse-resize;
+        }
+        .resize-handle-tl {
+            left: -5px;
+            top: -5px;
+        }
+        .resize-handle-br {
+            right: -5px;
+            bottom: -5px;
+        }
+        .coords-display {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+        }
+        .coords-display div {
+            margin: 5px 0;
+        }
+        .coords-display .label {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        .export-section {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .export-section button {
+            padding: 12px 24px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .export-section button:hover {
+            background: #45a049;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            font-family: 'Courier New', monospace;
+            background: #0f3460;
+            color: #eee;
+            border: 1px solid #533483;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        input[type="file"] {
+            padding: 8px;
+            background: #0f3460;
+            color: #eee;
+            border: 1px solid #533483;
+            border-radius: 4px;
+        }
+        .main-layout {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🥖 Bonk Emoji Maker - Coordinate Editor</h1>
+
+        <div class="instructions">
+            <strong>Instructions:</strong>
+            <ul>
+                <li>Load the frame-data.json file below</li>
+                <li>For each frame, click and drag to draw a box around the dog</li>
+                <li>Drag either red circle (top-left or bottom-right corner) to resize the box</li>
+                <li>Drag the box itself to move it without resizing</li>
+                <li>Click on the canvas (outside the box) to deselect, or press Escape to finalize any action</li>
+                <li>Use Previous/Next to navigate frames, or use arrow keys (← →)</li>
+                <li>Use "Copy from Previous" to copy coordinates when the dog is in a similar position</li>
+                <li>When done, click "Export Updated JSON" and save the file</li>
+            </ul>
+        </div>
+
+        <div class="controls">
+            <label for="jsonInput"><strong>Load frame-data.json:</strong></label><br>
+            <input type="file" id="jsonInput" accept=".json">
+        </div>
+
+        <div class="frame-nav">
+            <button id="prevFrame">← Previous</button>
+            <span id="frameInfo">Load JSON file to begin</span>
+            <button id="nextFrame">Next →</button>
+            <button id="copyFromPrev">Copy from Previous</button>
+            <button id="clearSelection">Clear Selection</button>
+        </div>
+
+        <div class="main-layout">
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="frameCanvas" width="640" height="640"></canvas>
+                <div class="selection-box" id="selectionBox" style="display: none;">
+                    <div class="resize-handle resize-handle-tl" id="resizeHandleTL"></div>
+                    <div class="resize-handle resize-handle-br" id="resizeHandleBR"></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="coords-display">
+                    <div><span class="label">Frame:</span> <span id="displayFrame">-</span></div>
+                    <div><span class="label">X:</span> <span id="displayX">0</span></div>
+                    <div><span class="label">Y:</span> <span id="displayY">0</span></div>
+                    <div><span class="label">Width:</span> <span id="displayWidth">0</span></div>
+                    <div><span class="label">Height:</span> <span id="displayHeight">0</span></div>
+                </div>
+
+                <div class="export-section">
+                    <button id="exportJson">💾 Export Updated JSON</button>
+                    <p style="margin-top: 10px; font-size: 14px;">
+                        Copy the JSON below and save it as <code>frame-data.json</code>
+                    </p>
+                    <textarea id="jsonOutput" readonly placeholder="Export JSON to see output here..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let frameData = null;
+        let currentFrameIndex = 0;
+        let loadedImages = [];
+
+        const SCALE = 10; // Scale up the 64x64 canvas to 640x640 for easier editing
+
+        let isDrawing = false;
+        let isResizing = false;
+        let isDragging = false;
+        let startX, startY;
+        let dragOffsetX, dragOffsetY;
+        let resizeAnchorX, resizeAnchorY; // Fixed corner during resize
+        let resizeCorner = ''; // 'tl' for top-left, 'br' for bottom-right
+
+        const canvas = document.getElementById('frameCanvas');
+        const ctx = canvas.getContext('2d');
+        const selectionBox = document.getElementById('selectionBox');
+        const resizeHandleTL = document.getElementById('resizeHandleTL');
+        const resizeHandleBR = document.getElementById('resizeHandleBR');
+        const canvasContainer = document.getElementById('canvasContainer');
+
+        // Load JSON file
+        document.getElementById('jsonInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        frameData = JSON.parse(event.target.result);
+                        loadFrames();
+                    } catch (error) {
+                        alert('Error parsing JSON: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        async function loadFrames() {
+            loadedImages = [];
+            const promises = frameData.frames.map((frame, index) => {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        loadedImages[index] = img;
+                        resolve();
+                    };
+                    img.onerror = () => {
+                        console.error('Failed to load frame:', frame.path);
+                        resolve();
+                    };
+                    img.src = frame.path;
+                });
+            });
+
+            await Promise.all(promises);
+            currentFrameIndex = 0;
+            renderFrame();
+            updateUI();
+        }
+
+        function renderFrame() {
+            if (!frameData || !loadedImages[currentFrameIndex]) return;
+
+            const img = loadedImages[currentFrameIndex];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the frame scaled up
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+
+            // Update selection box if coordinates exist
+            const frame = frameData.frames[currentFrameIndex];
+            if (frame.dogPosition.width > 0 && frame.dogPosition.height > 0) {
+                showSelectionBox(
+                    frame.dogPosition.x * SCALE,
+                    frame.dogPosition.y * SCALE,
+                    frame.dogPosition.width * SCALE,
+                    frame.dogPosition.height * SCALE
+                );
+            } else {
+                selectionBox.style.display = 'none';
+            }
+
+            updateCoordinatesDisplay();
+        }
+
+        function showSelectionBox(x, y, width, height) {
+            selectionBox.style.display = 'block';
+            selectionBox.style.left = x + 'px';
+            selectionBox.style.top = y + 'px';
+            selectionBox.style.width = width + 'px';
+            selectionBox.style.height = height + 'px';
+        }
+
+        function updateCoordinatesDisplay() {
+            const frame = frameData.frames[currentFrameIndex];
+            document.getElementById('displayFrame').textContent = `${currentFrameIndex + 1} of ${frameData.frames.length}`;
+            document.getElementById('displayX').textContent = frame.dogPosition.x;
+            document.getElementById('displayY').textContent = frame.dogPosition.y;
+            document.getElementById('displayWidth').textContent = frame.dogPosition.width;
+            document.getElementById('displayHeight').textContent = frame.dogPosition.height;
+        }
+
+        function updateUI() {
+            document.getElementById('frameInfo').textContent =
+                `Frame ${currentFrameIndex + 1} of ${frameData.frames.length}`;
+            document.getElementById('prevFrame').disabled = currentFrameIndex === 0;
+            document.getElementById('nextFrame').disabled = currentFrameIndex === frameData.frames.length - 1;
+            document.getElementById('copyFromPrev').disabled = currentFrameIndex === 0;
+        }
+
+        // Canvas mouse events for drawing selection
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // Check if clicking inside existing selection box
+            const frame = frameData.frames[currentFrameIndex];
+            const scaledX = frame.dogPosition.x * SCALE;
+            const scaledY = frame.dogPosition.y * SCALE;
+            const scaledWidth = frame.dogPosition.width * SCALE;
+            const scaledHeight = frame.dogPosition.height * SCALE;
+
+            if (x >= scaledX && x <= scaledX + scaledWidth &&
+                y >= scaledY && y <= scaledY + scaledHeight &&
+                scaledWidth > 0) {
+                // Start dragging
+                isDragging = true;
+                dragOffsetX = x - scaledX;
+                dragOffsetY = y - scaledY;
+                startX = x;
+                startY = y;
+            } else {
+                // Start new selection
+                isDrawing = true;
+                startX = x;
+                startY = y;
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (isDrawing) {
+                const width = x - startX;
+                const height = y - startY;
+                showSelectionBox(startX, startY, Math.abs(width), Math.abs(height));
+            } else if (isDragging) {
+                const newX = x - dragOffsetX;
+                const newY = y - dragOffsetY;
+                const frame = frameData.frames[currentFrameIndex];
+                const width = frame.dogPosition.width * SCALE;
+                const height = frame.dogPosition.height * SCALE;
+
+                showSelectionBox(
+                    Math.max(0, Math.min(newX, canvas.width - width)),
+                    Math.max(0, Math.min(newY, canvas.height - height)),
+                    width,
+                    height
+                );
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (isDrawing) {
+                // Complete the drawing
+                const finalWidth = Math.abs(x - startX);
+                const finalHeight = Math.abs(y - startY);
+                const finalX = Math.min(startX, x);
+                const finalY = Math.min(startY, y);
+
+                // Only save if the box is a decent size (at least 10x10 pixels)
+                if (finalWidth >= 10 && finalHeight >= 10) {
+                    // Save coordinates (scaled back down)
+                    const frame = frameData.frames[currentFrameIndex];
+                    frame.dogPosition.x = Math.round(finalX / SCALE);
+                    frame.dogPosition.y = Math.round(finalY / SCALE);
+                    frame.dogPosition.width = Math.round(finalWidth / SCALE);
+                    frame.dogPosition.height = Math.round(finalHeight / SCALE);
+
+                    updateCoordinatesDisplay();
+                } else {
+                    // Too small - just hide the box without saving
+                    selectionBox.style.display = 'none';
+                }
+            } else if (isDragging) {
+                // Detect if this was a click (minimal movement) vs a drag
+                const distance = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
+                const isClick = distance < 5;
+
+                if (isClick) {
+                    // Click without drag - just deselect/finalize
+                    isDragging = false;
+                    return;
+                }
+
+                // Complete the drag
+                const boxRect = selectionBox.getBoundingClientRect();
+                const containerRect = canvasContainer.getBoundingClientRect();
+                const finalX = boxRect.left - containerRect.left;
+                const finalY = boxRect.top - containerRect.top;
+                const finalWidth = parseInt(selectionBox.style.width);
+                const finalHeight = parseInt(selectionBox.style.height);
+
+                // Save coordinates (scaled back down)
+                const frame = frameData.frames[currentFrameIndex];
+                frame.dogPosition.x = Math.round(finalX / SCALE);
+                frame.dogPosition.y = Math.round(finalY / SCALE);
+                frame.dogPosition.width = Math.round(finalWidth / SCALE);
+                frame.dogPosition.height = Math.round(finalHeight / SCALE);
+
+                updateCoordinatesDisplay();
+            }
+
+            isDrawing = false;
+            isDragging = false;
+        });
+
+        // Resize handle events
+        resizeHandleTL.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            isResizing = true;
+            resizeCorner = 'tl';
+
+            // Store the bottom-right corner as the anchor point (opposite corner)
+            const boxLeft = parseInt(selectionBox.style.left);
+            const boxTop = parseInt(selectionBox.style.top);
+            const boxWidth = parseInt(selectionBox.style.width);
+            const boxHeight = parseInt(selectionBox.style.height);
+
+            resizeAnchorX = boxLeft + boxWidth;
+            resizeAnchorY = boxTop + boxHeight;
+        });
+
+        resizeHandleBR.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            isResizing = true;
+            resizeCorner = 'br';
+
+            // Store the top-left corner as the anchor point (opposite corner)
+            const boxLeft = parseInt(selectionBox.style.left);
+            const boxTop = parseInt(selectionBox.style.top);
+
+            resizeAnchorX = boxLeft;
+            resizeAnchorY = boxTop;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isResizing) {
+                const rect = canvasContainer.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+
+                let newX, newY, newWidth, newHeight;
+
+                if (resizeCorner === 'tl') {
+                    // Resizing from top-left, anchor is bottom-right
+                    newX = mouseX;
+                    newY = mouseY;
+                    newWidth = resizeAnchorX - mouseX;
+                    newHeight = resizeAnchorY - mouseY;
+
+                    // Enforce minimum size of 10px
+                    if (newWidth < 10) {
+                        newX = resizeAnchorX - 10;
+                        newWidth = 10;
+                    }
+                    if (newHeight < 10) {
+                        newY = resizeAnchorY - 10;
+                        newHeight = 10;
+                    }
+
+                    // Keep within canvas bounds
+                    newX = Math.max(0, Math.min(newX, canvas.width - 10));
+                    newY = Math.max(0, Math.min(newY, canvas.height - 10));
+                } else {
+                    // Resizing from bottom-right, anchor is top-left
+                    newX = resizeAnchorX;
+                    newY = resizeAnchorY;
+                    newWidth = mouseX - resizeAnchorX;
+                    newHeight = mouseY - resizeAnchorY;
+
+                    // Enforce minimum size of 10px
+                    if (newWidth < 10) {
+                        newWidth = 10;
+                    }
+                    if (newHeight < 10) {
+                        newHeight = 10;
+                    }
+
+                    // Keep within canvas bounds
+                    newWidth = Math.min(newWidth, canvas.width - newX);
+                    newHeight = Math.min(newHeight, canvas.height - newY);
+                }
+
+                showSelectionBox(newX, newY, newWidth, newHeight);
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                const frame = frameData.frames[currentFrameIndex];
+                frame.dogPosition.x = Math.round(parseInt(selectionBox.style.left) / SCALE);
+                frame.dogPosition.y = Math.round(parseInt(selectionBox.style.top) / SCALE);
+                frame.dogPosition.width = Math.round(parseInt(selectionBox.style.width) / SCALE);
+                frame.dogPosition.height = Math.round(parseInt(selectionBox.style.height) / SCALE);
+                updateCoordinatesDisplay();
+            }
+            isResizing = false;
+        });
+
+        // Navigation buttons
+        document.getElementById('prevFrame').addEventListener('click', () => {
+            if (currentFrameIndex > 0) {
+                currentFrameIndex--;
+                renderFrame();
+                updateUI();
+            }
+        });
+
+        document.getElementById('nextFrame').addEventListener('click', () => {
+            if (currentFrameIndex < frameData.frames.length - 1) {
+                currentFrameIndex++;
+                renderFrame();
+                updateUI();
+            }
+        });
+
+        document.getElementById('copyFromPrev').addEventListener('click', () => {
+            if (currentFrameIndex > 0) {
+                const prevFrame = frameData.frames[currentFrameIndex - 1];
+                const currentFrame = frameData.frames[currentFrameIndex];
+                currentFrame.dogPosition = { ...prevFrame.dogPosition };
+                renderFrame();
+            }
+        });
+
+        document.getElementById('clearSelection').addEventListener('click', () => {
+            const frame = frameData.frames[currentFrameIndex];
+            frame.dogPosition = { x: 0, y: 0, width: 0, height: 0 };
+            renderFrame();
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (!frameData) return;
+
+            if (e.key === 'Escape') {
+                // Stop any ongoing drawing/dragging/resizing and finalize the current box
+                if (isDrawing || isDragging || isResizing) {
+                    const frame = frameData.frames[currentFrameIndex];
+
+                    // If there's a visible selection box, save its current dimensions
+                    if (selectionBox.style.display !== 'none') {
+                        const finalX = parseInt(selectionBox.style.left) || 0;
+                        const finalY = parseInt(selectionBox.style.top) || 0;
+                        const finalWidth = parseInt(selectionBox.style.width) || 0;
+                        const finalHeight = parseInt(selectionBox.style.height) || 0;
+
+                        frame.dogPosition.x = Math.round(finalX / SCALE);
+                        frame.dogPosition.y = Math.round(finalY / SCALE);
+                        frame.dogPosition.width = Math.round(finalWidth / SCALE);
+                        frame.dogPosition.height = Math.round(finalHeight / SCALE);
+
+                        updateCoordinatesDisplay();
+                    }
+
+                    isDrawing = false;
+                    isDragging = false;
+                    isResizing = false;
+                }
+            } else if (e.key === 'ArrowLeft' && currentFrameIndex > 0) {
+                currentFrameIndex--;
+                renderFrame();
+                updateUI();
+            } else if (e.key === 'ArrowRight' && currentFrameIndex < frameData.frames.length - 1) {
+                currentFrameIndex++;
+                renderFrame();
+                updateUI();
+            }
+        });
+
+        // Export JSON
+        document.getElementById('exportJson').addEventListener('click', () => {
+            if (!frameData) {
+                alert('No data to export. Load a JSON file first.');
+                return;
+            }
+
+            const output = JSON.stringify(frameData, null, 2);
+            document.getElementById('jsonOutput').value = output;
+
+            // Also trigger download
+            const blob = new Blob([output], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'frame-data.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>

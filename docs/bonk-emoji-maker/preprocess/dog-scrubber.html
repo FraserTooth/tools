@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dog Scrubber</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .control-group {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background: #4CAF50;
+            color: white;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        button.active {
+            background: #2196F3;
+        }
+        .canvas-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        canvas {
+            border: 2px solid #333;
+            cursor: crosshair;
+            image-rendering: pixelated;
+        }
+        .info {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        input[type="range"] {
+            width: 200px;
+        }
+        input[type="color"] {
+            width: 50px;
+            height: 30px;
+            border: none;
+            cursor: pointer;
+        }
+        .sample-pixel {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 2px solid #333;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖌️ Dog Scrubber</h1>
+
+        <div class="instructions">
+            <h3>Instructions:</h3>
+            <ol>
+                <li>Load the frame-data.json file below</li>
+                <li>Use "Erase (Transparent)" mode to paint transparency over the dog</li>
+                <li>Adjust brush size if needed (larger = faster, smaller = more precise)</li>
+                <li>Paint over the dog to make it transparent</li>
+                <li>Use "Show dog position box" to see where the dog is</li>
+                <li>Optional: Switch to "Paint Color" mode and Shift+Click to sample/paint colors</li>
+                <li>Click "Next Frame" to move through all frames</li>
+                <li>Click "Export All" when done to download all cleaned frames</li>
+            </ol>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="jsonInput"><strong>Load frame-data.json:</strong></label>
+                <input type="file" id="jsonInput" accept=".json">
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <button id="prevBtn">← Previous Frame</button>
+                <button id="nextBtn">Next Frame →</button>
+                <span class="info" id="frameInfo">Frame 1 of 25</span>
+            </div>
+
+            <div class="control-group">
+                <label>Brush Size:</label>
+                <input type="range" id="brushSize" min="1" max="20" value="5">
+                <span id="brushSizeValue">5px</span>
+            </div>
+
+            <div class="control-group">
+                <label>Mode:</label>
+                <button id="eraseBtn" class="active">Erase (Transparent)</button>
+                <button id="paintBtn">Paint Color</button>
+                <input type="color" id="paintColor" value="#ffffff" style="display:none;">
+                <span class="sample-pixel" id="samplePixel" style="display:none;"></span>
+                <span id="colorInfo">Shift+Click to sample color</span>
+            </div>
+
+            <div class="control-group">
+                <button id="resetBtn">Reset Frame</button>
+                <button id="saveFrameBtn">Save Frame</button>
+                <button id="exportBtn">Export All Frames</button>
+            </div>
+
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="showBox">
+                    Show dog position box
+                </label>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="canvas" width="640" height="640"></canvas>
+        </div>
+
+        <div id="output" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const frameInfo = document.getElementById('frameInfo');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const saveFrameBtn = document.getElementById('saveFrameBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const brushSizeInput = document.getElementById('brushSize');
+        const brushSizeValue = document.getElementById('brushSizeValue');
+        const paintColorInput = document.getElementById('paintColor');
+        const samplePixel = document.getElementById('samplePixel');
+        const colorInfo = document.getElementById('colorInfo');
+        const showBoxCheck = document.getElementById('showBox');
+        const outputDiv = document.getElementById('output');
+        const eraseBtn = document.getElementById('eraseBtn');
+        const paintBtn = document.getElementById('paintBtn');
+
+        let frameData = null;
+        let currentFrameIndex = 0;
+        let originalImages = [];
+        let editedImages = [];
+        let isDrawing = false;
+        let brushSize = 5;
+        let paintColor = '#ffffff';
+        let isEraseMode = true;
+
+        // Initialize UI
+        colorInfo.textContent = 'Erase mode (transparent)';
+        frameInfo.textContent = 'Load JSON file to begin';
+
+        // Load JSON file
+        document.getElementById('jsonInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        frameData = JSON.parse(event.target.result);
+                        loadAllFrames();
+                    } catch (error) {
+                        alert('Error parsing JSON: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        async function loadAllFrames() {
+            const promises = frameData.frames.map((frame, i) => {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        originalImages[i] = img;
+                        // Create a copy for editing
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = 64;
+                        tempCanvas.height = 64;
+                        const tempCtx = tempCanvas.getContext('2d');
+                        tempCtx.drawImage(img, 0, 0);
+                        editedImages[i] = tempCtx.getImageData(0, 0, 64, 64);
+                        resolve();
+                    };
+                    img.src = frame.path;
+                });
+            });
+            await Promise.all(promises);
+            drawFrame();
+        }
+
+        function drawFrame() {
+            if (!editedImages[currentFrameIndex]) return;
+
+            const scale = 10; // 640/64
+
+            // Draw the edited frame data
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 64;
+            tempCanvas.height = 64;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.putImageData(editedImages[currentFrameIndex], 0, 0);
+
+            ctx.imageSmoothingEnabled = false;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(tempCanvas, 0, 0, 64, 64, 0, 0, 640, 640);
+
+            // Draw dog position box if checked
+            if (showBoxCheck.checked) {
+                const dog = frameData.frames[currentFrameIndex].dogPosition;
+                ctx.strokeStyle = 'red';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(dog.x * scale, dog.y * scale, dog.width * scale, dog.height * scale);
+            }
+
+            frameInfo.textContent = `Frame ${currentFrameIndex + 1} of ${frameData.frames.length}`;
+            prevBtn.disabled = currentFrameIndex === 0;
+            nextBtn.disabled = currentFrameIndex === frameData.frames.length - 1;
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / 10);
+            const y = Math.floor((e.clientY - rect.top) / 10);
+
+            // If shift key, sample color
+            if (e.shiftKey) {
+                const pixel = editedImages[currentFrameIndex].data;
+                const index = (y * 64 + x) * 4;
+                const r = pixel[index];
+                const g = pixel[index + 1];
+                const b = pixel[index + 2];
+                const hex = '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+                paintColor = hex;
+                paintColorInput.value = hex;
+                samplePixel.style.backgroundColor = hex;
+                colorInfo.textContent = `Sampled: ${hex}`;
+            } else {
+                isDrawing = true;
+                paint(x, y);
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / 10);
+            const y = Math.floor((e.clientY - rect.top) / 10);
+            paint(x, y);
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDrawing = false;
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isDrawing = false;
+        });
+
+        function paint(centerX, centerY) {
+            const imageData = editedImages[currentFrameIndex];
+            const data = imageData.data;
+
+            let r, g, b, a;
+
+            if (isEraseMode) {
+                // Erase mode - make transparent
+                r = g = b = 0;
+                a = 0;
+            } else {
+                // Paint mode - use selected color
+                r = parseInt(paintColor.substr(1, 2), 16);
+                g = parseInt(paintColor.substr(3, 2), 16);
+                b = parseInt(paintColor.substr(5, 2), 16);
+                a = 255;
+            }
+
+            // Paint in a circle
+            for (let dy = -brushSize; dy <= brushSize; dy++) {
+                for (let dx = -brushSize; dx <= brushSize; dx++) {
+                    if (dx * dx + dy * dy <= brushSize * brushSize) {
+                        const x = centerX + dx;
+                        const y = centerY + dy;
+                        if (x >= 0 && x < 64 && y >= 0 && y < 64) {
+                            const index = (y * 64 + x) * 4;
+                            data[index] = r;
+                            data[index + 1] = g;
+                            data[index + 2] = b;
+                            data[index + 3] = a;
+                        }
+                    }
+                }
+            }
+
+            drawFrame();
+        }
+
+        brushSizeInput.addEventListener('input', (e) => {
+            brushSize = parseInt(e.target.value);
+            brushSizeValue.textContent = brushSize + 'px';
+        });
+
+        paintColorInput.addEventListener('input', (e) => {
+            paintColor = e.target.value;
+            samplePixel.style.backgroundColor = paintColor;
+        });
+
+        showBoxCheck.addEventListener('change', drawFrame);
+
+        eraseBtn.addEventListener('click', () => {
+            isEraseMode = true;
+            eraseBtn.classList.add('active');
+            paintBtn.classList.remove('active');
+            paintColorInput.style.display = 'none';
+            samplePixel.style.display = 'none';
+            colorInfo.textContent = 'Erase mode (transparent)';
+        });
+
+        paintBtn.addEventListener('click', () => {
+            isEraseMode = false;
+            paintBtn.classList.add('active');
+            eraseBtn.classList.remove('active');
+            paintColorInput.style.display = 'inline-block';
+            samplePixel.style.display = 'inline-block';
+            colorInfo.textContent = 'Shift+Click to sample color';
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentFrameIndex > 0) {
+                currentFrameIndex--;
+                drawFrame();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentFrameIndex < frameData.frames.length - 1) {
+                currentFrameIndex++;
+                drawFrame();
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            // Reset current frame to original
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 64;
+            tempCanvas.height = 64;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(originalImages[currentFrameIndex], 0, 0);
+            editedImages[currentFrameIndex] = tempCtx.getImageData(0, 0, 64, 64);
+            drawFrame();
+        });
+
+        saveFrameBtn.addEventListener('click', () => {
+            console.log(`Frame ${currentFrameIndex} saved to memory`);
+            alert(`Frame ${currentFrameIndex + 1} saved!`);
+        });
+
+        exportBtn.addEventListener('click', () => {
+            outputDiv.innerHTML = '<h3>Exporting frames...</h3>';
+
+            // Create a zip-like output showing all frames as data URLs
+            let html = '<h3>Copy these commands to save frames:</h3><pre style="background:#f0f0f0;padding:10px;overflow-x:auto;">';
+            html += 'mkdir -p ../dogless_frames\n\n';
+
+            editedImages.forEach((imageData, i) => {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = 64;
+                tempCanvas.height = 64;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.putImageData(imageData, 0, 0);
+                const dataURL = tempCanvas.toDataURL('image/png');
+
+                // Show download link
+                const link = document.createElement('a');
+                link.href = dataURL;
+                link.download = `frame-${String(i).padStart(3, '0')}.png`;
+                link.textContent = `Download frame-${String(i).padStart(3, '0')}.png`;
+                link.style.display = 'block';
+                link.style.margin = '5px 0';
+                outputDiv.appendChild(link);
+            });
+
+            outputDiv.innerHTML += '<p><strong>Click each link above to download the frames, then save them to the dogless_frames folder.</strong></p>';
+        });
+    </script>
+</body>
+</html>
