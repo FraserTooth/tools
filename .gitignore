@@ -1,2 +1,28 @@
-node_modules
+# Operating-system files
 .DS_Store
+Thumbs.db
+
+# Dependencies and package-manager diagnostics
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local environment settings and secrets
+.env
+.env.*
+!.env.example
+
+# Editor and workspace state
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Generated output, test coverage, and temporary files
+dist/
+coverage/
+.cache/
+tmp/
+*.log
