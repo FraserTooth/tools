@@ -2,6 +2,10 @@
 
 Small, single-purpose HTML tools for GitHub Pages. Each tool lives under `docs/<tool-name>/` and should run entirely in the browser.
 
+## Tone of voice
+
+Keep public-facing copy friendly, plainspoken, and a little playful. These are personal tools Fraser made because he wanted them to exist, not a polished SaaS product: avoid marketing language, generic claims, and technical jargon where simple words will do. Emphasize the practical upside naturally—no ads, no sign-up, no tracking, and no faff—without sounding defensive or overly formal.
+
 ## Shared conventions for emoji and meme makers
 
 Emoji makers typically combine a user-uploaded image with a sequence of transparent or animated artwork, then export a PNG or GIF. Keep that entire workflow client-side: read uploads with `FileReader`, composite them with a `<canvas>`, and create the download as a Blob. Do not upload a user's image to a service.

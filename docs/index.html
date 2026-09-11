@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#141217">
-    <meta name="description" content="Small tools for turning your images into reaction-worthy emojis and memes.">
+    <meta name="description" content="Small browser tools made by Fraser Tooth.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <title>Emoji Tools</title>
+    <title>Fraser's Tools</title>
     <style>
         :root { --ink:#f8f3ef; --muted:#bcb4bd; --card:#211c25; --line:#3b3340; --pink:#ff7a92; --violet:#9c8cff; }
         * { box-sizing:border-box; }
@@ -29,26 +29,26 @@
         .tool.fire::after { background:#fa4f20; }.tool.bonk::after { background:#7761df; }
         .tool-top { display:flex; align-items:center; justify-content:space-between; }.icon { display:grid; place-items:center; width:52px; height:52px; border-radius:15px; background:#ffffff0e; font-size:29px; }.arrow { color:#d7ced9; font-size:22px; transition:transform .18s ease; }.tool:hover .arrow { transform:translate(3px,-3px); }
         .tool h2 { margin:67px 0 8px; font-size:25px; letter-spacing:-.045em; }.tool p { max-width:290px; margin:0; color:#c7bdc7; font-size:14px; line-height:1.55; }.tag { position:absolute; bottom:22px; color:#f5bbaf; font-size:12px; font-weight:750; }.bonk .tag { color:#c7beff; }
-        footer { margin-top:58px; color:#827988; font-size:13px; }
+        footer { margin-top:58px; color:#827988; font-size:13px; } footer a { color:#cbbfd1; text-decoration:none; } footer a:hover { color:#fff; text-decoration:underline; }
         @media (max-width:640px) { main { width:min(100% - 28px,1020px); padding-top:24px; } header { margin-bottom:52px; }.tools { grid-template-columns:1fr; }.tool { min-height:245px; } }
     </style>
 </head>
 <body>
     <main>
         <header>
-            <div class="brand"><div class="brand-mark">✦</div>Emoji Tools</div>
-            <div class="count">2 makers</div>
+            <div class="brand"><div class="brand-mark">✦</div>Fraser's Tools</div>
+            <div class="count">2 tools</div>
         </header>
         <section aria-labelledby="title">
-            <p class="eyebrow">Tiny tools, maximum reaction</p>
-            <h1 id="title">Make your images<br><span>hard to ignore.</span></h1>
-            <p class="lede">Small, in-browser tools for turning an image into an instant reaction. No account, no upload—just make it and send it.</p>
+            <p class="eyebrow">No ads. No sign-up.</p>
+            <h1 id="title">Some <span>Handy Tools</span></h1>
+            <p class="lede">Small browser tools I made for fun — no tracking, no faff, just use them.</p>
         </section>
         <section class="tools" aria-label="Available tools">
             <a class="tool fire" href="on-fire-emoji-maker/">
                 <div class="tool-top"><div class="icon">🔥</div><div class="arrow">↗</div></div>
                 <h2>On Fire</h2>
-                <p>Put any image in the blaze, then take it to the group chat as a GIF or PNG.</p>
+                <p>Put any image in the blaze, then send it to Slack as a GIF or PNG.</p>
                 <span class="tag">For outages, wins, and everything else</span>
             </a>
             <a class="tool bonk" href="bonk-emoji-maker/">
@@ -58,7 +58,7 @@
                 <span class="tag">A gentle reminder, animated</span>
             </a>
         </section>
-        <footer>Made for the group chat.</footer>
+        <footer>Brushed up 🦷 by <a href="https://github.com/FraserTooth">Fraser</a></footer>
     </main>
 </body>
 </html>
